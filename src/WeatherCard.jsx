@@ -1,42 +1,69 @@
-import {React, useState, useEffect } from "react"
-import axios from "axios"
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 function WeatherCard() {
-    const [weatherData, setWeatherData] = useState({temp: null, state: null, iconId: null,})
-    const [error, setError] = useState(null)
+    const [weatherData, setWeatherData] = useState({ temp: null, state: null, iconId: null });
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         const fetchWeatherData = async () => {
             try {
-                const response = await axios.get("http://api.openweathermap.org/data/2.5/weather", {
-                params: {
-                        lat: "30.07",
-                        lon: "31.34",
-                        units: "metric",
-                        appid: "c07c215c29d7db0a88e1eea1348c0849"
-                    }
-                })
-                let weatherTempNow = response.data.main.temp
-                let roundedTempNow = Math.round(weatherTempNow)
-                setWeatherData(wd => ({...wd, temp: roundedTempNow}))
-                let weatherStateNow = response.data.weather[0].description
-                setWeatherData(wd => ({...wd, state: toTitleCase(weatherStateNow)}))
-                let weatherIconIdNow = response.data.weather[0].icon
-                setWeatherData(wd => ({...wd, iconId: weatherIconIdNow}))
+                // Check if within rate limit
+                if (!isRateLimited()) {
+                    const response = await axios.get("http://api.openweathermap.org/data/2.5/weather", {
+                        params: {
+                            lat: "30.07",
+                            lon: "31.34",
+                            units: "metric",
+                            appid: import.meta.env.VITE_OWM_API_KEY
+                        }
+                    });
+                    let weatherTempNow = response.data.main.temp;
+                    let roundedTempNow = Math.round(weatherTempNow);
+                    setWeatherData(wd => ({ ...wd, temp: roundedTempNow }));
+                    let weatherStateNow = response.data.weather[0].description;
+                    setWeatherData(wd => ({ ...wd, state: toTitleCase(weatherStateNow) }));
+                    let weatherIconIdNow = response.data.weather[0].icon;
+                    setWeatherData(wd => ({ ...wd, iconId: weatherIconIdNow }));
+
+                    // Update rate limit timestamp
+                    updateRateLimit();
+                } else {
+                    // Handle rate limit exceeded
+                    setError("Rate limit exceeded. Please wait before refreshing.");
+                }
             } catch (error) {
-                setError("Error Fetching Weather Data")
-                console.error(error)
+                setError(error.message);
+                console.error(error);
             }
-        }
-        fetchWeatherData()
-    })
+        };
+
+        fetchWeatherData();
+    }, []);
 
     const toTitleCase = (string) => {
         return string
-        .split(' ')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ')
-    }
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+    };
+
+    const isRateLimited = () => {
+        const now = new Date().getTime();
+        const rateLimitCount = parseInt(localStorage.getItem('rateLimitCount')) || 0;
+        const rateLimitTimestamp = parseInt(localStorage.getItem('rateLimitTimestamp')) || 0;
+
+        // Check if more than 20 requests were made in the last hour
+        return rateLimitCount >= 20 && (now - rateLimitTimestamp) < (60 * 60 * 1000); // 1 hour in milliseconds
+    };
+
+    const updateRateLimit = () => {
+        const now = new Date().getTime();
+        const rateLimitCount = parseInt(localStorage.getItem('rateLimitCount')) || 0;
+
+        localStorage.setItem('rateLimitCount', rateLimitCount + 1);
+        localStorage.setItem('rateLimitTimestamp', now);
+    };
 
     const iconMap = {
         "01d": "climacon-sunny.svg",
@@ -60,10 +87,9 @@ function WeatherCard() {
         // Add more mappings as needed
     };
 
-    const iconsPath = "/src/assets/weathericons/"
-    const owmId2Climacon = iconMap[weatherData.iconId] || "climacon-unknown.svg"
-    const climacon = iconsPath + owmId2Climacon
-    
+    const iconsPath = "/src/assets/weathericons/";
+    const owmId2Climacon = iconMap[weatherData.iconId] || "climacon-unknown.svg";
+    const climacon = iconsPath + owmId2Climacon;
 
     if (error) {
         return (
@@ -72,18 +98,18 @@ function WeatherCard() {
                     <h2>Error: {error}</h2>
                 </span>
             </div>
-        )
+        );
     }
 
     return (
-    <div className="card">
-        <span className="card-container">
-            <img className="weather-icon" src={climacon} alt={weatherData.iconId}/>
-            <h1 className="weather-temp">{weatherData.temp}℃</h1>
-            <p>{weatherData.state}</p>
-        </span>
-    </div>
-    )
+        <div className="card">
+            <span className="card-container">
+                <img className="weather-icon" src={climacon} alt={weatherData.iconId} />
+                <h1 className="weather-temp">{weatherData.temp}℃</h1>
+                <p>{weatherData.state}</p>
+            </span>
+        </div>
+    );
 }
 
-export default WeatherCard
+export default WeatherCard;

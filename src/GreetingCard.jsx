@@ -5,9 +5,9 @@ function GreetingCard(props) {
     let hrs = today.getHours()
     if (hrs < 12)
         greet = 'Good Morning';
-    else if (hrs >= 12 && hrs <= 17)
+    else if (hrs >= 12 && hrs <= 18)
         greet = 'Good Afternoon';
-    else if (hrs >= 17 && hrs <= 22)
+    else if (hrs >= 18 && hrs <= 22)
         greet = 'Good Evening';
     else if (hrs >= 22 && hrs <= 24)
         greet = 'Good Night';

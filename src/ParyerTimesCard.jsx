@@ -17,6 +17,7 @@ function PrayerTimesCard() {
                         method: 5 // Method 2 is the default method for prayer times calculation
                     }
                 });
+                console.info(response)
                 let timings = response.data.data.timings;
                 const unwantedTimings = ['Imsak', 'Midnight', 'Firstthird', 'Lastthird', 'Sunset'];
                 timings = Object.fromEntries(

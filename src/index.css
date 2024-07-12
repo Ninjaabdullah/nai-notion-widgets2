@@ -2,7 +2,7 @@
   background-color: #191919;
   color: #d3d3d3;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, sans-serif;
-  overflow: -moz-hidden-unscrollable;
+  overflow: hidden;
 }
 
 .card {
