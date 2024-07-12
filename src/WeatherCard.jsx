@@ -87,7 +87,7 @@ function WeatherCard() {
         // Add more mappings as needed
     };
 
-    const iconsPath = "/nai-notion-widgets2/src/assets/weathericons/";
+    const iconsPath = "/assets/weathericons/";
     const owmId2Climacon = iconMap[weatherData.iconId] || "climacon-unknown.svg";
     const climacon = iconsPath + owmId2Climacon;
 
