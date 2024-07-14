@@ -26,7 +26,7 @@ function PrayerTimesCard() {
                 setPrayerTimes(timings);
                 calculateUpcomingPrayer(timings);
             } catch (error) {
-                setError('Error fetching prayer times');
+                setError(error.message);
                 console.error(error);
             }
         };
