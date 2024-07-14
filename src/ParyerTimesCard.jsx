@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react"
-import axios from "axios"
+import { useState, useEffect } from "react";
+import axios from "axios";
 
 function PrayerTimesCard() {
     const [prayerTimes, setPrayerTimes] = useState(null);
     const [upcomingPrayer, setUpcomingPrayer] = useState({ name: '', time: '' });
-    const [hijriDate, setHijriDate] = useState(null)
+    const [hijriDate, setHijriDate] = useState(null);
     const [error, setError] = useState(null);
 
     useEffect(() => {
@@ -17,7 +17,6 @@ function PrayerTimesCard() {
                         method: 5 // Method 2 is the default method for prayer times calculation
                     }
                 });
-                console.info(response)
                 let timings = response.data.data.timings;
                 const unwantedTimings = ['Imsak', 'Midnight', 'Firstthird', 'Lastthird', 'Sunset'];
                 timings = Object.fromEntries(
@@ -45,9 +44,8 @@ function PrayerTimesCard() {
             for (let i = 0; i < prayerTimesArray.length; i++) {
                 if (currentTime < prayerTimesArray[i].time) {
                     setUpcomingPrayer({ name: prayerTimesArray[i].name, time: prayerTimesArray[i].time.toLocaleTimeString(["en-US"], { hour: 'numeric', minute: '2-digit' }) });
-                    if (currentTime.getDay = 5 && prayerTimesArray[i].name == "Dhuhr") {
-                        setUpcomingPrayer({ name: "Juhmma", time: prayerTimesArray[i].time.toLocaleTimeString(["en-US"], { hour: '2-digit', minute: '2-digit' })})
-                        return;
+                    if (currentTime.getDay() == 5 && prayerTimesArray[i].name == "Dhuhr") {
+                        setUpcomingPrayer({ name: "Jummah", time: prayerTimesArray[i].time.toLocaleTimeString(["en-US"], { hour: 'numeric', minute: '2-digit' }) });
                     }
                     return;
                 }
@@ -57,35 +55,43 @@ function PrayerTimesCard() {
             setUpcomingPrayer({ name: 'Fajr', time: prayerTimesArray[0].time.toLocaleTimeString(["en-US"], { hour: 'numeric', minute: '2-digit' }) });
         };
 
-        const a2e = num => num.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))
+        const a2e = (num) => num.replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
 
         const fetchHijriDate = () => {
             let today = new Date();
             const hijriMonths = 
             ["Muharram","Safar","Rabi' al-awwal","Rabi' al-Thani","Jumada al-awwal","Jumada al-Thani","Rajab","Sha'ban","Ramadan","Shawwal","Dhu al-Qi'dah","Dhu al-Hijjah"];
-            let hijriDay = a2e(today.toLocaleDateString(["ar-SA"], {day: "numeric"}))
-            let hijriMonth = a2e(today.toLocaleDateString(["ar-SA"], {month: "numeric"})) - 1
-            let hijriYear = a2e(today.toLocaleDateString(["ar-SA"], {year: "numeric"})).replace(/\D/g,'')
-            setHijriDate(hijriDay + " " + hijriMonths[hijriMonth] + " " + hijriYear)
-        }
+            let hijriDay = a2e(today.toLocaleDateString(["ar-SA"], {day: "numeric"}));
+            let hijriMonth = a2e(today.toLocaleDateString(["ar-SA"], {month: "numeric"})) - 1;
+            let hijriYear = a2e(today.toLocaleDateString(["ar-SA"], {year: "numeric"})).replace(/\D/g,'');
+            setHijriDate(hijriDay + " " + hijriMonths[hijriMonth] + " " + hijriYear);
+        };
 
         fetchPrayerTimes();
         fetchHijriDate();
-    }, []);
+
+        const intervalId = setInterval(() => {
+            if (prayerTimes) {
+                calculateUpcomingPrayer(prayerTimes);
+            }
+        }, 60000);
+
+        return () => clearInterval(intervalId);
+    }, [prayerTimes]);
 
     const hijriDateStyle = {
         fontSize: 16,
         marginTop: -2
-    }
+    };
 
     if (!prayerTimes) {
         return (
-        <div className="card">
-            <span className="card-container">
-                <h2>Loading...</h2>
-            </span>
-        </div>
-        )
+            <div className="card">
+                <span className="card-container">
+                    <h2>Loading...</h2>
+                </span>
+            </div>
+        );
     }
 
     if (error) {
@@ -95,7 +101,7 @@ function PrayerTimesCard() {
                     <h2>Error: {error}</h2>
                 </span>
             </div>
-            )
+        );
     }
     
     return (
@@ -109,6 +115,7 @@ function PrayerTimesCard() {
                 </span>
             </span>
         </div>
-    )
+    );
 }
-export default PrayerTimesCard
+
+export default PrayerTimesCard;

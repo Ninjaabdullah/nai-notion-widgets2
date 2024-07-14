@@ -39,6 +39,8 @@ function WeatherCard() {
         };
 
         fetchWeatherData();
+        const intervalId = setInterval(fetchWeatherData, 900000);
+        return () => clearInterval(intervalId);
     }, []);
 
     const toTitleCase = (string) => {
