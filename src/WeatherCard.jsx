@@ -29,11 +29,9 @@ function WeatherCard() {
     };
 
     const updateRateLimit = () => {
-        const now = new Date().getTime();
         const rateLimitCount = parseInt(localStorage.getItem('rateLimitCount')) || 0;
 
         localStorage.setItem('rateLimitCount', (rateLimitCount + 1).toString());
-        localStorage.setItem('rateLimitTimestamp', now.toString());
     };
 
     const fetchWeatherData = useCallback(async () => {

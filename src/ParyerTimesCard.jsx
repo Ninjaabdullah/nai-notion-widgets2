@@ -31,53 +31,60 @@ function PrayerTimesCard() {
             }
         };
 
-        const calculateUpcomingPrayer = (timings) => {
-            const currentTime = new Date();
-            const prayerTimesArray = Object.entries(timings).map(([name, time]) => {
-                const [hours, minutes] = time.split(':');
-                const prayerTime = new Date();
-                prayerTime.setHours(hours);
-                prayerTime.setMinutes(minutes);
-                return { name, time: prayerTime };
-            });
-
-            for (let i = 0; i < prayerTimesArray.length; i++) {
-                if (currentTime < prayerTimesArray[i].time) {
-                    setUpcomingPrayer({ name: prayerTimesArray[i].name, time: prayerTimesArray[i].time.toLocaleTimeString(["en-US"], { hour: 'numeric', minute: '2-digit' }) });
-                    if (currentTime.getDay() == 5 && prayerTimesArray[i].name == "Dhuhr") {
-                        setUpcomingPrayer({ name: "Jummah", time: prayerTimesArray[i].time.toLocaleTimeString(["en-US"], { hour: 'numeric', minute: '2-digit' }) });
-                    }
-                    return;
-                }
-            }
-
-            // If all prayer times have passed, the next prayer is Fajr of the next day
-            setUpcomingPrayer({ name: 'Fajr', time: prayerTimesArray[0].time.toLocaleTimeString(["en-US"], { hour: 'numeric', minute: '2-digit' }) });
-        };
-
-        const a2e = (num) => num.replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
-
-        const fetchHijriDate = () => {
-            let today = new Date();
-            const hijriMonths = 
-            ["Muharram","Safar","Rabi' al-awwal","Rabi' al-Thani","Jumada al-awwal","Jumada al-Thani","Rajab","Sha'ban","Ramadan","Shawwal","Dhu al-Qi'dah","Dhu al-Hijjah"];
-            let hijriDay = a2e(today.toLocaleDateString(["ar-SA"], {day: "numeric"}));
-            let hijriMonth = a2e(today.toLocaleDateString(["ar-SA"], {month: "numeric"})) - 1;
-            let hijriYear = a2e(today.toLocaleDateString(["ar-SA"], {year: "numeric"})).replace(/\D/g,'');
-            setHijriDate(hijriDay + " " + hijriMonths[hijriMonth] + " " + hijriYear);
-        };
-
         fetchPrayerTimes();
         fetchHijriDate();
 
-        const intervalId = setInterval(() => {
-            if (prayerTimes) {
-                calculateUpcomingPrayer(prayerTimes);
-            }
-        }, 60000);
+    }, []);
 
+    useEffect(() => {
+        if (!prayerTimes) return;
+
+        const intervalId = setInterval(() => {
+            calculateUpcomingPrayer(prayerTimes);
+        }, 60000);
+        console.log("rendered")
+
+        // Clean up the interval on component unmount
         return () => clearInterval(intervalId);
     }, [prayerTimes]);
+
+    const calculateUpcomingPrayer = (timings) => {
+        const currentTime = new Date();
+        const prayerTimesArray = Object.entries(timings).map(([name, time]) => {
+            const [hours, minutes] = time.split(':');
+            const prayerTime = new Date();
+            prayerTime.setHours(hours);
+            prayerTime.setMinutes(minutes);
+            prayerTime.setSeconds(0);
+            return { name, time: prayerTime };
+        });
+
+        for (let i = 0; i < prayerTimesArray.length; i++) {
+            if (currentTime < prayerTimesArray[i].time) {
+                setUpcomingPrayer({ name: prayerTimesArray[i].name, time: prayerTimesArray[i].time.toLocaleTimeString(["en-US"], { hour: 'numeric', minute: '2-digit' }) });
+                if (currentTime.getDay() == 5 && prayerTimesArray[i].name == "Dhuhr") {
+                    setUpcomingPrayer({ name: "Jummah", time: prayerTimesArray[i].time.toLocaleTimeString(["en-US"], { hour: 'numeric', minute: '2-digit' }) });
+                }
+                return;
+            }
+        }
+
+        // If all prayer times have passed, the next prayer is Fajr of the next day
+        setUpcomingPrayer({ name: 'Fajr', time: prayerTimesArray[0].time.toLocaleTimeString(["en-US"], { hour: 'numeric', minute: '2-digit' }) });
+    };
+
+    const a2e = (num) => num.replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+
+    const fetchHijriDate = () => {
+        let today = new Date();
+        const hijriMonths = [
+            "Muharram", "Safar", "Rabi' al-awwal", "Rabi' al-Thani", "Jumada al-awwal", "Jumada al-Thani", "Rajab", "Sha'ban", "Ramadan", "Shawwal", "Dhu al-Qi'dah", "Dhu al-Hijjah"
+        ];
+        let hijriDay = a2e(today.toLocaleDateString(["ar-SA"], { day: "numeric" }));
+        let hijriMonth = a2e(today.toLocaleDateString(["ar-SA"], { month: "numeric" })) - 1;
+        let hijriYear = a2e(today.toLocaleDateString(["ar-SA"], { year: "numeric" })).replace(/\D/g, '');
+        setHijriDate(hijriDay + " " + hijriMonths[hijriMonth] + " " + hijriYear);
+    };
 
     const hijriDateStyle = {
         fontSize: 16,
@@ -103,7 +110,7 @@ function PrayerTimesCard() {
             </div>
         );
     }
-    
+
     return (
         <div className="card">
             <span className="card-container">

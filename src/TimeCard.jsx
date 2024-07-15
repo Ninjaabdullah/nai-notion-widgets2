@@ -1,17 +1,26 @@
 import { useState, useEffect } from "react"
 
 function TimeCard() {
-    const [time, setTime] = useState("0:00:00");
+    const [time, setTime] = useState(new Date());
 
     useEffect(() => {
-        setTimeout(() => {
-            setTime((time) => hour + ":" + minutes + ":" + seconds);
-    }, 1000)})
+        const intervalId = setInterval(() => {
+            setTime(new Date())
+        }, 1000);
 
-    let today = new Date()
-    let hour = (tweleveHour(today.getHours()))
-    let minutes = (zeros(today.getMinutes()))
-    let seconds = (zeros(today.getSeconds()))
+        return () => {
+            clearInterval(intervalId);
+        }
+    }, [])
+
+    function formatTime(){
+        // Time Formating
+        let hour = (tweleveHour(time.getHours()))
+        let minutes = (zeros(time.getMinutes()))
+        let seconds = (zeros(time.getSeconds()))
+        return `${hour}:${minutes}:${seconds}`;
+    }
+    // AM & PM Styling
     const amStyle = {
         fontSize: 16,
         verticalAlign: "text-top",
@@ -20,20 +29,28 @@ function TimeCard() {
         fontSize: 16,
         verticalAlign: "text-bottom",
     }
-    let amorpm = today.getHours() < 12 ? <span style={amStyle}>AM</span> : <span style={pmStyle}>PM</span>
-    const weeks =
+    // AM & PM Getter
+    let amorpm = time.getHours() < 12 ? <span style={amStyle}>AM</span> : <span style={pmStyle}>PM</span>
+    // Weekdays Names
+    const weekDayNames =
     ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
-    let week = weeks[today.getDay()].slice(0,3)
+    // Weekday Getter
+    let week = weekDayNames[time.getDay()].slice(0,3)
+    // Day Styling
     const dayStyle = {
         fontWeight: 600,
         fontSize: 18,
         verticalAlign: "baseline",
     }
-    let day = today.getDate()
+    // Day Getter
+    let day = time.getDate()
+    // Month Names
     const months =
     ["January","February","March","April","May","June","July","August","September","October","November","December"]
-    let month = months[today.getMonth()].slice(0,3)
-    let year = today.getFullYear()
+    // Month Getter
+    let month = months[time.getMonth()].slice(0,3)
+    // Year Getter
+    let year = time.getFullYear()
 
 
     // Turn hours into 12 hour format
@@ -46,6 +63,7 @@ function TimeCard() {
             return hour
     }
 
+    // Add zeros to numbers less than
     function zeros(num) {
         if (num < 10)
             return num = "0" + num
@@ -56,7 +74,7 @@ function TimeCard() {
     return (
     <div className="card">
         <span className="card-container">
-            <h2 className="clock">{time}{amorpm}</h2>
+            <h2 className="clock">{formatTime()}{amorpm}</h2>
             <p className="date">{month} <span style={dayStyle}>{day}</span> {week}</p>
         </span>
     </div>
